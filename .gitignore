@@ -1,0 +1,12 @@
+.idea/
+
+# makepkg build output
+pkg/
+src/
+*.pkg.tar.zst
+*.pkg.tar.xz
+*.pkg.tar.gz
+
+# build-deb.sh output
+build/
+*.deb

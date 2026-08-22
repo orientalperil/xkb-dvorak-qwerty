@@ -1,0 +1,83 @@
+// dq - key type for a Dvorak layout that falls back to QWERTY
+// key positions while a shortcut modifier (Control, Alt or Super) is held.
+//
+// Level 1 = Dvorak lower      Level 3 = QWERTY lower
+// Level 2 = Dvorak upper      Level 4 = QWERTY upper
+//
+// "upper" means Shift XOR CapsLock, which is how the stock ALPHABETIC type
+// behaves.  The shortcut modifiers are listed in preserve[] so applications
+// still see Control/Alt/Super -- without that, Ctrl+C would send a bare "c".
+
+partial xkb_types "dq" {
+
+    type "DVORAK_QWERTY" {
+        modifiers = Shift+Lock+Control+Mod1+Mod4;
+
+        map[None]                        = Level1;
+        map[Shift]                       = Level2;
+        map[Lock]                        = Level2;
+        map[Control]                     = Level3;
+        map[Mod1]                        = Level3;
+        map[Mod4]                        = Level3;
+        map[Shift+Lock]                  = Level1;
+        map[Shift+Control]               = Level4;
+        map[Shift+Mod1]                  = Level4;
+        map[Shift+Mod4]                  = Level4;
+        map[Lock+Control]                = Level4;
+        map[Lock+Mod1]                   = Level4;
+        map[Lock+Mod4]                   = Level4;
+        map[Control+Mod1]                = Level3;
+        map[Control+Mod4]                = Level3;
+        map[Mod1+Mod4]                   = Level3;
+        map[Shift+Lock+Control]          = Level3;
+        map[Shift+Lock+Mod1]             = Level3;
+        map[Shift+Lock+Mod4]             = Level3;
+        map[Shift+Control+Mod1]          = Level4;
+        map[Shift+Control+Mod4]          = Level4;
+        map[Shift+Mod1+Mod4]             = Level4;
+        map[Lock+Control+Mod1]           = Level4;
+        map[Lock+Control+Mod4]           = Level4;
+        map[Lock+Mod1+Mod4]              = Level4;
+        map[Control+Mod1+Mod4]           = Level3;
+        map[Shift+Lock+Control+Mod1]     = Level3;
+        map[Shift+Lock+Control+Mod4]     = Level3;
+        map[Shift+Lock+Mod1+Mod4]        = Level3;
+        map[Shift+Control+Mod1+Mod4]     = Level4;
+        map[Lock+Control+Mod1+Mod4]      = Level4;
+        map[Shift+Lock+Control+Mod1+Mod4] = Level3;
+
+        preserve[Control]                = Control;
+        preserve[Mod1]                   = Mod1;
+        preserve[Mod4]                   = Mod4;
+        preserve[Shift+Control]          = Control;
+        preserve[Shift+Mod1]             = Mod1;
+        preserve[Shift+Mod4]             = Mod4;
+        preserve[Lock+Control]           = Control;
+        preserve[Lock+Mod1]              = Mod1;
+        preserve[Lock+Mod4]              = Mod4;
+        preserve[Control+Mod1]           = Control+Mod1;
+        preserve[Control+Mod4]           = Control+Mod4;
+        preserve[Mod1+Mod4]              = Mod1+Mod4;
+        preserve[Shift+Lock+Control]     = Control;
+        preserve[Shift+Lock+Mod1]        = Mod1;
+        preserve[Shift+Lock+Mod4]        = Mod4;
+        preserve[Shift+Control+Mod1]     = Control+Mod1;
+        preserve[Shift+Control+Mod4]     = Control+Mod4;
+        preserve[Shift+Mod1+Mod4]        = Mod1+Mod4;
+        preserve[Lock+Control+Mod1]      = Control+Mod1;
+        preserve[Lock+Control+Mod4]      = Control+Mod4;
+        preserve[Lock+Mod1+Mod4]         = Mod1+Mod4;
+        preserve[Control+Mod1+Mod4]      = Control+Mod1+Mod4;
+        preserve[Shift+Lock+Control+Mod1] = Control+Mod1;
+        preserve[Shift+Lock+Control+Mod4] = Control+Mod4;
+        preserve[Shift+Lock+Mod1+Mod4]   = Mod1+Mod4;
+        preserve[Shift+Control+Mod1+Mod4] = Control+Mod1+Mod4;
+        preserve[Lock+Control+Mod1+Mod4] = Control+Mod1+Mod4;
+        preserve[Shift+Lock+Control+Mod1+Mod4] = Control+Mod1+Mod4;
+
+        level_name[Level1] = "Dvorak";
+        level_name[Level2] = "Dvorak Shift";
+        level_name[Level3] = "QWERTY (shortcut)";
+        level_name[Level4] = "QWERTY Shift (shortcut)";
+    };
+};
