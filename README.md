@@ -15,9 +15,12 @@ type.
 |---|---|
 | `dq.types` | Defines the `DVORAK_QWERTY` key type: four levels, selected by Shift/Lock/Control/Mod1/Mod4. `preserve[]` keeps the shortcut modifiers visible to applications — without it Ctrl+C would arrive as a bare `c`. |
 | `dq.symbols` | `include "us(dvorak)"` plus a four-level override per key: `[dvorak, dvorak+shift, qwerty, qwerty+shift]`. |
-| `install-dq.sh` | Installs into `/usr/share/X11/xkb`. Needs sudo. Works on X11 *and* Wayland. |
-| `install-dq.sh --user` | Installs into `~/.config/xkb`. No root. **Wayland only.** |
-| `build-deb.sh` / `PKGBUILD` | Build a `.deb` / pacman package from `dq.symbols` and `dq.types`. See [Building the packages](#building-the-packages). |
+| `install-dq.sh` | Installs into `/usr/share/X11/xkb`. Needs sudo. Works on X11 *and* Wayland. `--user` mode installs into `~/.config/xkb` instead, no root, Wayland only. |
+| `build-deb.sh` | Builds `xkb-dvorak-qwerty_<version>_all.deb` with `dpkg-deb`: generates the control file plus `postinst`/`postrm` scripts that patch `types/complete`, `evdev.xml` and `evdev.lst` in place, and a dpkg trigger that re-runs them after `xkb-data` is upgraded. |
+| `PKGBUILD` | Arch/`makepkg` build recipe. Packages `dq.symbols`, `dq.types`, `dq-patch.sh` and `dq.hook` into `/usr/share/xkb-dvorak-qwerty` (not directly into `/usr/share/X11/xkb`, which is a symlink owned by `xkeyboard-config`). |
+| `dq-patch.sh` | Adds/removes the `dq` entries in the system xkb registry (`dq-patch.sh add\|remove`). Used by the pacman hook and by `xkb-dvorak-qwerty.install`; ships inside the Arch package, copied to `/usr/share/xkb-dvorak-qwerty/dq-patch.sh`. |
+| `dq.hook` | Pacman hook: watches `xkb`/`xkeyboard-config` rules and types paths for install/upgrade, then runs `dq-patch.sh add` so the layout survives an `xkeyboard-config` update. Installed as `/usr/share/libalpm/hooks/95-xkb-dvorak-qwerty.hook`. |
+| `xkb-dvorak-qwerty.install` | Pacman `.install` scriptlet: runs `dq-patch.sh add` on install/upgrade and `dq-patch.sh remove` before removal, plus prints the "add the layout in System Settings" reminder after install. |
 
 `install-dq.sh` and `install-dq.sh --user` install the *same* layout; they
 differ only in where the files land and therefore which display server can
