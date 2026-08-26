@@ -53,6 +53,9 @@ patch_types() {   # $1 = path to a types/complete file to edit in place
 
 unpatch_types() { [ -f "$1" ] && sed -i '/^[[:space:]]*include "dq"/d' "$1"; return 0; }
 
+# countryList is required even though the layout is English-only: several
+# desktops' "Add layout" pickers default to browsing by country rather than
+# language, and an entry with no countryList never shows up there.
 patch_xml() {     # $1 = path to an evdev.xml to edit in place
     local f="$1"
     grep -q '<name>dq</name>' "$f" && return 0
@@ -65,6 +68,9 @@ patch_xml() {     # $1 = path to an evdev.xml to edit in place
         print "        <name>dq</name>"
         print "        <shortDescription>dq</shortDescription>"
         print "        <description>English (Dvorak, QWERTY shortcuts)</description>"
+        print "        <countryList>"
+        print "          <iso3166Id>US</iso3166Id>"
+        print "        </countryList>"
         print "        <languageList>"
         print "          <iso639Id>eng</iso639Id>"
         print "        </languageList>"

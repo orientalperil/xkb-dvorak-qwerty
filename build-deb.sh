@@ -79,6 +79,9 @@ patch_types() {
     sed -i '0,/include "basic"/s//include "basic"\n    include "dq"/' "$TYPES"
 }
 
+# countryList is required even though the layout is English-only: several
+# desktops' "Add layout" pickers default to browsing by country rather than
+# language, and an entry with no countryList never shows up there.
 patch_xml() {
     grep -q '<name>dq</name>' "$XML" && return 0
     tmp=$(mktemp)
@@ -89,6 +92,9 @@ patch_xml() {
         print "        <name>dq</name>"
         print "        <shortDescription>dq</shortDescription>"
         print "        <description>English (Dvorak, QWERTY shortcuts)</description>"
+        print "        <countryList>"
+        print "          <iso3166Id>US</iso3166Id>"
+        print "        </countryList>"
         print "        <languageList>"
         print "          <iso639Id>eng</iso639Id>"
         print "        </languageList>"

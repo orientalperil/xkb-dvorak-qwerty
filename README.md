@@ -152,6 +152,14 @@ your desktop's keyboard list. A dpkg trigger / pacman hook re-applies those line
 automatically whenever the owning package is upgraded, and removing the package
 strips them back out.
 
+The `evdev.xml` entry declares both a `<countryList>` (`US`) and a `<languageList>`
+(`eng`). Some desktops' "Add layout" picker defaults to browsing by country rather
+than by language — MATE's does — and a layout with no `<countryList>` never appears
+there no matter which country you pick, since it isn't filed under any of them. This
+applies to any X11 desktop whose layout picker groups by country, not just MATE; the
+layout is still correctly installed and selectable (e.g. via `setxkbmap dq` or your
+desktop's raw layout-list setting) even before you find it in that dialog.
+
 ## The keyboard indicator
 
 The layout is named `dq` because desktop keyboard indicators label themselves with the
