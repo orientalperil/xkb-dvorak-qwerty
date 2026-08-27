@@ -121,6 +121,37 @@ work on Wayland — but KDE Plasma's keyboard settings page only reads the syste
 so the layout never appears in the list and has to be set by hand with `kwriteconfig6`.
 Installing system-wide (or via the distro package) is the only way to get it listed in the GUI.
 
+## Uninstall
+
+Switch your keyboard layout back to plain Dvorak or `us` in your desktop's keyboard
+settings **first** — otherwise the session is left pointing at a layout that no longer
+exists. Then use whichever line matches how you installed:
+
+| Installed with | Remove with |
+|---|---|
+| `makepkg -si` | `sudo pacman -R xkb-dvorak-qwerty` |
+| `sudo apt install ./xkb-dvorak-qwerty_1.0.0_all.deb` | `sudo apt remove xkb-dvorak-qwerty` |
+| `sudo ./install-dq.sh` | `sudo ./install-dq.sh --uninstall` |
+| `./install-dq.sh --user` | `./install-dq.sh --user --uninstall` |
+
+All four delete `symbols/dq` and `types/dq` and strip the registry lines back out of
+`types/complete`, `rules/evdev.xml` and `rules/evdev.lst`. The two package removals do
+it from the pacman `pre_remove` scriptlet / dpkg `postrm`, and take the pacman hook or
+dpkg trigger with them, so nothing re-registers the layout at the next
+`xkeyboard-config`/`xkb-data` upgrade. Log out and back in afterwards.
+
+The registry files are unpatched in place rather than restored from the `.pre-dq`
+backups `install-dq.sh` made, so those copies are left alone — delete them yourself if
+you want them gone.
+
+`--user --uninstall` removes the four files it wrote under `~/.config/xkb` and then the
+directories, if empty. It does not touch the `kwriteconfig6` settings, so reset the
+layout by hand as well:
+
+```bash
+kwriteconfig6 --file kxkbrc --group Layout --key LayoutList us
+```
+
 ## Checking it works
 
 Open a text editor and type `hello` — you should get `hello` in Dvorak positions.
