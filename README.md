@@ -9,22 +9,27 @@ Shift deliberately does *not* switch to QWERTY — it only capitalises, the
 same as on a Mac, since otherwise capital letters would be impossible to
 type.
 
+It installs as a variant of the stock English (US) layout — `us(dvorak-qwerty)`,
+the same name the [upstream submission](upstream-submission.md) proposes — so it
+appears in your desktop's keyboard settings under **English (US)**, alongside
+English (Dvorak) and the other US variants.
+
 ## Files
 
 | File | Purpose |
 |---|---|
-| `dq.types` | Defines the `DVORAK_QWERTY` key type: four levels, selected by Shift/Lock/Control/Mod1/Mod4. `preserve[]` keeps the shortcut modifiers visible to applications — without it Ctrl+C would arrive as a bare `c`. |
-| `dq.symbols` | `include "us(dvorak)"` plus a four-level override per key: `[dvorak, dvorak+shift, qwerty, qwerty+shift]`. |
-| `install-dq.sh` | Installs into `/usr/share/X11/xkb`. Needs sudo. Works on X11 *and* Wayland. `--user` mode installs into `~/.config/xkb` instead, no root, Wayland only. |
-| `build-deb.sh` | Builds `xkb-dvorak-qwerty_<version>_all.deb` with `dpkg-deb`: generates the control file plus `postinst`/`postrm` scripts that patch `types/complete`, `evdev.xml` and `evdev.lst` in place, and a dpkg trigger that re-runs them after `xkb-data` is upgraded. |
-| `PKGBUILD` | Arch/`makepkg` build recipe. Packages `dq.symbols`, `dq.types`, `dq-patch.sh` and `dq.hook` into `/usr/share/xkb-dvorak-qwerty` (not directly into `/usr/share/X11/xkb`, which is a symlink owned by `xkeyboard-config`). |
-| `dq-patch.sh` | Adds/removes the `dq` entries in the system xkb registry (`dq-patch.sh add\|remove`). Used by the pacman hook and by `xkb-dvorak-qwerty.install`; ships inside the Arch package, copied to `/usr/share/xkb-dvorak-qwerty/dq-patch.sh`. |
-| `dq.hook` | Pacman hook: watches `xkb`/`xkeyboard-config` rules and types paths for install/upgrade, then runs `dq-patch.sh add` so the layout survives an `xkeyboard-config` update. Installed as `/usr/share/libalpm/hooks/95-xkb-dvorak-qwerty.hook`. |
-| `xkb-dvorak-qwerty.install` | Pacman `.install` scriptlet: runs `dq-patch.sh add` on install/upgrade and `dq-patch.sh remove` before removal, plus prints the "add the layout in System Settings" reminder after install. |
+| `dvorak-qwerty.types` | Defines the `DVORAK_QWERTY` key type: four levels, selected by Shift/Lock/Control/Mod1/Mod4. `preserve[]` keeps the shortcut modifiers visible to applications — without it Ctrl+C would arrive as a bare `c`. Installed as `types/dvorak-qwerty`. |
+| `dvorak-qwerty.symbols` | The `xkb_symbols "dvorak-qwerty"` block: `include "us(dvorak)"` plus a four-level override per key: `[dvorak, dvorak+shift, qwerty, qwerty+shift]`. Spliced into the system `symbols/us` between two marker comments. |
+| `xkb-patch.sh` | Adds/removes the variant in the xkb database (`xkb-patch.sh add\|remove [xkb-root]`). The single implementation shared by all four install paths below. |
+| `install.sh` | Standalone installer for distros with no package here. Needs sudo. Works on X11 *and* Wayland. `--user` mode installs into `~/.config/xkb` instead, no root, Wayland only. |
+| `build-deb.sh` | Builds `xkb-dvorak-qwerty_<version>_all.deb` with `dpkg-deb`: generates the control file, the `postinst`/`prerm` scripts that call `xkb-patch.sh`, and a dpkg trigger that re-runs it after `xkb-data` is upgraded. |
+| `PKGBUILD` | Arch/`makepkg` build recipe. Packages the two data files, `xkb-patch.sh` and the hook into `/usr/share/xkb-dvorak-qwerty` (not directly into `/usr/share/X11/xkb`, which is a symlink owned by `xkeyboard-config`). |
+| `xkb-dvorak-qwerty.hook` | Pacman hook: watches the xkb `rules`/`symbols`/`types` paths for install/upgrade, then runs `xkb-patch.sh add` so the variant survives an `xkeyboard-config` update. Installed as `/usr/share/libalpm/hooks/95-xkb-dvorak-qwerty.hook`. |
+| `xkb-dvorak-qwerty.install` | Pacman `.install` scriptlet: runs `xkb-patch.sh add` on install/upgrade and `xkb-patch.sh remove` before removal, plus prints the "add the layout in System Settings" reminder after install. |
 
-`install-dq.sh` and `install-dq.sh --user` install the *same* layout; they
-differ only in where the files land and therefore which display server can
-see them. Pick one, not both.
+`install.sh` and `install.sh --user` install the *same* variant; they differ
+only in where the files land and therefore which display server can see them.
+Pick one, not both.
 
 ## Install — Arch, CachyOS, EndeavourOS, Manjaro
 
@@ -33,10 +38,10 @@ makepkg -si
 ```
 
 Builds and installs a proper pacman package, including a hook that re-registers
-the layout after every `xkeyboard-config` upgrade. Remove with
+the variant after every `xkeyboard-config` upgrade. Remove with
 `sudo pacman -R xkb-dvorak-qwerty`.
 
-The package ships its files to `/usr/share/xkb-dvorak-qwerty` and copies them into the xkb
+The package ships its files to `/usr/share/xkb-dvorak-qwerty` and splices them into the xkb
 tree from there, rather than shipping them into the tree directly. On Arch `/usr/share/X11/xkb`
 is a symlink owned by `xkeyboard-config`, and a package containing that path is rejected with
 `exists in filesystem (owned by xkeyboard-config)`.
@@ -45,29 +50,28 @@ is a symlink owned by `xkeyboard-config`, and a package containing that path is 
 
 ```bash
 ./build-deb.sh
-sudo apt install ./xkb-dvorak-qwerty_1.0.0_all.deb
+sudo apt install ./xkb-dvorak-qwerty_1.1.0_all.deb
 ```
 
-A dpkg trigger re-registers the layout after `xkb-data` upgrades. Remove with
+A dpkg trigger re-registers the variant after `xkb-data` upgrades. Remove with
 `sudo apt remove xkb-dvorak-qwerty`.
 
 ## Install — any other distro (or a per-user, rootless install)
 
 ```bash
-chmod +x install-dq.sh
-sudo ./install-dq.sh
+chmod +x install.sh
+sudo ./install.sh
 ```
 
 Finds your xkb database wherever the distro put it (`find_xkb_root` checks the
-common locations), installs the layout, and registers it in `/usr/share/X11/xkb`.
-Copies both files in, adds `include "dq"` to `types/complete`, and registers the
-layout in `rules/evdev.xml` and `rules/evdev.lst` — backing up every file it edits
-first. On X11 you can try it immediately with `setxkbmap dq`.
+common locations), then hands it to `xkb-patch.sh`, backing up every file it
+edits first. On X11 you can try it immediately with
+`setxkbmap us -variant dvorak-qwerty`.
 
-There is no upgrade hook on this path, so if the layout disappears after your distro
+There is no upgrade hook on this path, so if the variant disappears after your distro
 updates `xkeyboard-config`/`xkb-data`, run the script again.
 
-Undo with `sudo ./install-dq.sh --uninstall`.
+Undo with `sudo ./install.sh --uninstall`.
 
 ### Which installer (system vs. per-user)
 
@@ -75,10 +79,10 @@ libxkbcommon — used by KWin on Wayland — searches `~/.config/xkb` before the
 system directory. The X server does not: `xkbcomp` only reads
 `/usr/share/X11/xkb`. So:
 
-* **Wayland session** → `install-dq.sh --user`. No root, and an `xkb-data`/
+* **Wayland session** → `install.sh --user`. No root, and an `xkb-data`/
   `xkeyboard-config` upgrade can't clobber it.
-* **X11 session, or you want the layout available to every user and to SDDM**
-  → `install-dq.sh` (system-wide) or the packaged install above.
+* **X11 session, or you want the variant available to every user and to SDDM**
+  → `install.sh` (system-wide) or the packaged install above.
 
 Check which session you're in with `echo $XDG_SESSION_TYPE`.
 
@@ -87,61 +91,67 @@ settings page won't list a user-directory layout, so you'd have to select it wit
 `kwriteconfig6`:
 
 ```bash
-./install-dq.sh --user
+./install.sh --user
 ```
 
 It writes four files:
 
 ```
-~/.config/xkb/symbols/dq            the layout
-~/.config/xkb/types/dq              the DVORAK_QWERTY key type
-~/.config/xkb/types/complete        copy of the system file + include "dq"
-~/.config/xkb/rules/evdev.xml       registry entry so the layout can be listed
+~/.config/xkb/symbols/us            copy of the system file + the dvorak-qwerty block
+~/.config/xkb/types/dvorak-qwerty   the DVORAK_QWERTY key type
+~/.config/xkb/types/complete        copy of the system file + include "dvorak-qwerty"
+~/.config/xkb/rules/evdev.xml       registry entry so the variant can be listed
 ```
+
+A per-user file *replaces* the system one rather than merging with it, which is why
+`symbols/us` and `types/complete` are copied whole and then edited. That also means
+these copies go stale: after an `xkeyboard-config` upgrade adds or changes other US
+variants, re-run the script to pick them up.
 
 Then set the layout by hand and log out/in:
 
 ```bash
 kwriteconfig6 --file kxkbrc --group Layout --key Use true
-kwriteconfig6 --file kxkbrc --group Layout --key LayoutList dq
-kwriteconfig6 --file kxkbrc --group Layout --key VariantList ""
+kwriteconfig6 --file kxkbrc --group Layout --key LayoutList us
+kwriteconfig6 --file kxkbrc --group Layout --key VariantList dvorak-qwerty
 kwriteconfig6 --file kxkbrc --group Layout --key DisplayNames ""
 ```
 
 (`kwriteconfig5` on Plasma 5.) Undo everything with
-`./install-dq.sh --user --uninstall`.
+`./install.sh --user --uninstall`.
 
 After any of these installs: add **English (Dvorak, QWERTY shortcuts)** in System
-Settings → Keyboard → Layouts, remove your old Dvorak entry, and log out and back in.
+Settings → Keyboard → Layouts (it is listed under English (US)), remove your old
+Dvorak entry, and log out and back in.
 
 #### Why a system install instead of `~/.config/xkb`
 
 libxkbcommon reads per-user layouts from `~/.config/xkb`, so a user-directory install does
 work on Wayland — but KDE Plasma's keyboard settings page only reads the system registry,
-so the layout never appears in the list and has to be set by hand with `kwriteconfig6`.
+so the variant never appears in the list and has to be set by hand with `kwriteconfig6`.
 Installing system-wide (or via the distro package) is the only way to get it listed in the GUI.
 
 ## Uninstall
 
 Switch your keyboard layout back to plain Dvorak or `us` in your desktop's keyboard
-settings **first** — otherwise the session is left pointing at a layout that no longer
+settings **first** — otherwise the session is left pointing at a variant that no longer
 exists. Then use whichever line matches how you installed:
 
 | Installed with | Remove with |
 |---|---|
 | `makepkg -si` | `sudo pacman -R xkb-dvorak-qwerty` |
-| `sudo apt install ./xkb-dvorak-qwerty_1.0.0_all.deb` | `sudo apt remove xkb-dvorak-qwerty` |
-| `sudo ./install-dq.sh` | `sudo ./install-dq.sh --uninstall` |
-| `./install-dq.sh --user` | `./install-dq.sh --user --uninstall` |
+| `sudo apt install ./xkb-dvorak-qwerty_1.1.0_all.deb` | `sudo apt remove xkb-dvorak-qwerty` |
+| `sudo ./install.sh` | `sudo ./install.sh --uninstall` |
+| `./install.sh --user` | `./install.sh --user --uninstall` |
 
-All four delete `symbols/dq` and `types/dq` and strip the registry lines back out of
+All four delete `types/dvorak-qwerty` and strip our additions back out of `symbols/us`,
 `types/complete`, `rules/evdev.xml` and `rules/evdev.lst`. The two package removals do
-it from the pacman `pre_remove` scriptlet / dpkg `postrm`, and take the pacman hook or
-dpkg trigger with them, so nothing re-registers the layout at the next
+it from the pacman `pre_remove` scriptlet / dpkg `prerm`, and take the pacman hook or
+dpkg trigger with them, so nothing re-registers the variant at the next
 `xkeyboard-config`/`xkb-data` upgrade. Log out and back in afterwards.
 
-The registry files are unpatched in place rather than restored from the `.pre-dq`
-backups `install-dq.sh` made, so those copies are left alone — delete them yourself if
+The edited files are unpatched in place rather than restored from the `.pre-dvorak-qwerty`
+backups `install.sh` made, so those copies are left alone — delete them yourself if
 you want them gone.
 
 `--user --uninstall` removes the four files it wrote under `~/.config/xkb` and then the
@@ -149,7 +159,7 @@ directories, if empty. It does not touch the `kwriteconfig6` settings, so reset 
 layout by hand as well:
 
 ```bash
-kwriteconfig6 --file kxkbrc --group Layout --key LayoutList us
+kwriteconfig6 --file kxkbrc --group Layout --key VariantList ""
 ```
 
 ## Checking it works
@@ -161,7 +171,7 @@ not type a `j`.
 For a closer look:
 
 ```bash
-xkbcli compile-keymap --layout dq | grep -A3 '<AB03>'   # does it build
+xkbcli compile-keymap --layout us --variant dvorak-qwerty | grep -A3 '<AB03>'
 sudo xkbcli interactive-evdev                           # live keysyms, Wayland
 xev -event keyboard                                     # live keysyms, X11
 ```
@@ -174,32 +184,40 @@ Super `c`.
 
 | Path | What it is |
 |---|---|
-| `/usr/share/X11/xkb/symbols/dq` | The layout: four symbols per key — Dvorak, Dvorak+shift, QWERTY, QWERTY+shift |
-| `/usr/share/X11/xkb/types/dq` | The rule that picks which of those four to use, based on the modifiers held |
+| `/usr/share/xkb-dvorak-qwerty/dvorak-qwerty.symbols` | The variant: four symbols per key — Dvorak, Dvorak+shift, QWERTY, QWERTY+shift |
+| `/usr/share/xkb-dvorak-qwerty/dvorak-qwerty.types` | The rule that picks which of those four to use, based on the modifiers held |
+| `/usr/share/xkb-dvorak-qwerty/xkb-patch.sh` | Splices the two into the xkb database, and strips them back out |
 
-The package also adds three lines to files owned by `xkb-data`/`xkeyboard-config`
-(`types/complete`, `rules/evdev.xml`, `rules/evdev.lst`) so the layout shows up in
-your desktop's keyboard list. A dpkg trigger / pacman hook re-applies those lines
-automatically whenever the owning package is upgraded, and removing the package
-strips them back out.
+`xkb-patch.sh` copies the key type to `types/dvorak-qwerty` and then edits four files
+owned by `xkb-data`/`xkeyboard-config`:
 
-The `evdev.xml` entry declares both a `<countryList>` (`US`) and a `<languageList>`
-(`eng`). Some desktops' "Add layout" picker defaults to browsing by country rather
-than by language — MATE's does — and a layout with no `<countryList>` never appears
-there no matter which country you pick, since it isn't filed under any of them. This
-applies to any X11 desktop whose layout picker groups by country, not just MATE; the
-layout is still correctly installed and selectable (e.g. via `setxkbmap dq` or your
-desktop's raw layout-list setting) even before you find it in that dialog.
+| File | Edit |
+|---|---|
+| `symbols/us` | the `xkb_symbols "dvorak-qwerty"` block is appended, wrapped in `// >>> xkb-dvorak-qwerty >>>` / `// <<< xkb-dvorak-qwerty <<<` marker comments so it can be removed again |
+| `types/complete` | `include "dvorak-qwerty"` |
+| `rules/evdev.xml` | a `<variant>` entry inside the existing `us` layout's `<variantList>` |
+| `rules/evdev.lst` | one line under `! variant` |
+
+Every edit is idempotent, and a dpkg trigger / pacman hook re-applies them automatically
+whenever the owning package is upgraded. That matters more than it used to: the variant
+itself now lives in `symbols/us`, so an upgrade wipes the layout, not just its
+registration.
+
+The variant is registered inside the `us` layout, so it inherits that layout's
+`<countryList>` (`US`) and `<languageList>` (`eng`) and declares neither of its own.
+This is what makes it appear in desktop layout pickers that browse by country rather
+than by language — MATE's does — where a top-level layout with no `<countryList>` is
+filed under no country at all and never shows up.
 
 ## The keyboard indicator
 
-The layout is named `dq` because desktop keyboard indicators label themselves with the
-*layout name* rather than the description — that's why the US layout shows `us`. A longer
-name overflows the tray and covers neighbouring icons.
+Desktop keyboard indicators label themselves with the *layout* name, not the variant
+or the description, so this shows as `us` — the same as plain English (US), and
+indistinguishable from it at a glance if you have both enabled. Plasma also draws its
+flag from that name, so the entry gets the US flag like any other US variant.
 
-Plasma prints the name as-is, so this shows as `dq` in lowercase, matching `us`. If you'd
-rather see capitals, edit the label for the entry in System Settings → Keyboard → Layouts;
-that changes the displayed text only.
+If you want to tell them apart, edit the label for the entry in System Settings →
+Keyboard → Layouts; that changes the displayed text only.
 
 ## Building the packages
 
@@ -215,5 +233,5 @@ and `PKGBUILD` first if you want them to reflect you rather than the placeholder
 * The Dvorak dead keys on `' , . ;` (levels 3–4, only reachable if you enable a
   LevelThree/AltGr option) are replaced by the QWERTY letters.
 * Only Control, Alt and Super switch to QWERTY. To drop one of them, delete every
-  line mentioning the matching `Mod4` (Super) or `Mod1` (Alt) from `dq.types` and
-  reinstall/rebuild.
+  line mentioning the matching `Mod4` (Super) or `Mod1` (Alt) from
+  `dvorak-qwerty.types` and reinstall/rebuild.

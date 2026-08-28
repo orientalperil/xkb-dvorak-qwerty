@@ -1,5 +1,5 @@
-// dq - key type for a Dvorak layout that falls back to QWERTY
-// key positions while a shortcut modifier (Control, Alt or Super) is held.
+// Key type for a Dvorak layout that falls back to QWERTY key positions
+// while a shortcut modifier (Control, Alt or Super) is held.
 //
 // Level 1 = Dvorak lower      Level 3 = QWERTY lower
 // Level 2 = Dvorak upper      Level 4 = QWERTY upper
@@ -8,7 +8,7 @@
 // behaves.  The shortcut modifiers are listed in preserve[] so applications
 // still see Control/Alt/Super -- without that, Ctrl+C would send a bare "c".
 
-partial xkb_types "dq" {
+partial xkb_types "dvorak-qwerty" {
 
     type "DVORAK_QWERTY" {
         modifiers = Shift+Lock+Control+Mod1+Mod4;

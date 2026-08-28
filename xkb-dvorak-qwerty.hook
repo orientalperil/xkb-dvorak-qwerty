@@ -1,0 +1,19 @@
+# Re-adds the us(dvorak-qwerty) variant after xkeyboard-config is upgraded,
+# since the upgrade restores the stock symbols/us, rules/evdev.xml,
+# rules/evdev.lst and types/complete.
+
+[Trigger]
+Type = Path
+Operation = Install
+Operation = Upgrade
+Target = usr/share/X11/xkb/rules/*
+Target = usr/share/X11/xkb/symbols/*
+Target = usr/share/X11/xkb/types/*
+Target = usr/share/xkeyboard-config-2/rules/*
+Target = usr/share/xkeyboard-config-2/symbols/*
+Target = usr/share/xkeyboard-config-2/types/*
+
+[Action]
+Description = Re-registering the Dvorak-QWERTY keyboard variant...
+When = PostTransaction
+Exec = /usr/share/xkb-dvorak-qwerty/xkb-patch.sh add

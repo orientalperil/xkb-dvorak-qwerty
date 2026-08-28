@@ -1,15 +1,16 @@
 post_install() {
-    /usr/share/xkb-dvorak-qwerty/dq-patch.sh add
+    /usr/share/xkb-dvorak-qwerty/xkb-patch.sh add
     cat <<'MSG'
 ==> Add "English (Dvorak, QWERTY shortcuts)" in System Settings > Keyboard >
-==> Layouts, remove your old Dvorak entry, then log out and back in.
+==> Layouts -- it is listed under English (US) -- remove your old Dvorak
+==> entry, then log out and back in.
 MSG
 }
 
 post_upgrade() {
-    /usr/share/xkb-dvorak-qwerty/dq-patch.sh add
+    /usr/share/xkb-dvorak-qwerty/xkb-patch.sh add
 }
 
 pre_remove() {
-    /usr/share/xkb-dvorak-qwerty/dq-patch.sh remove
+    /usr/share/xkb-dvorak-qwerty/xkb-patch.sh remove
 }

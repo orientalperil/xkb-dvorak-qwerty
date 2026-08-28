@@ -1,16 +1,20 @@
-// dq - "Dvorak-QWERTY Cmd" for X11 / Wayland
+// >>> xkb-dvorak-qwerty >>>
+// This block is appended to the system symbols/us by xkb-patch.sh; the two
+// marker comments delimit it so the same script can strip it back out again.
+//
+// us(dvorak-qwerty) -- a port of the macOS "Dvorak - QWERTY Cmd" layout.
 //
 // Types like plain US Dvorak.  While Control, Alt or Super is held, every
 // letter/punctuation key reverts to its QWERTY position, so Ctrl+C, Ctrl+V,
 // Ctrl+Z, Alt+F, Super+L etc. stay under the fingers they live on in QWERTY.
 //
-// Requires the "DVORAK_QWERTY" key type from xkb/types/dq.
+// Requires the "DVORAK_QWERTY" key type from xkb/types/dvorak-qwerty.
 //
 // Shift deliberately does NOT switch to QWERTY -- it just capitalises,
 // otherwise you could never type a capital letter.
 
-default partial alphanumeric_keys
-xkb_symbols "basic" {
+partial alphanumeric_keys
+xkb_symbols "dvorak-qwerty" {
 
     include "us(dvorak)"
 
@@ -59,3 +63,4 @@ xkb_symbols "basic" {
     key <AB09> {[ v,            V,             period,        greater       ]};
     key <AB10> {[ z,            Z,             slash,         question      ]};
 };
+// <<< xkb-dvorak-qwerty <<<

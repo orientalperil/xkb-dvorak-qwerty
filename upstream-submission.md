@@ -204,6 +204,6 @@ express modifier-dependent character output at all, since it may not.
 
 ---
 
-*Note on naming: the local package uses the layout name `dq` so that desktop keyboard
-indicators show a short "DQ" label. Upstream this becomes the variant `us(dvorak-qwerty)`
-instead, where the indicator inherits the `us` label, so the short name is not needed there.*
+*Note on naming: this repo installs the variant under exactly the name proposed here,
+`us(dvorak-qwerty)`, so nothing about the layout has to change if the merge request
+lands — only where the files come from.*
